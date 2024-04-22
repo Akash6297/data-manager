@@ -9,57 +9,96 @@
 </head>
 
 <body>
-  <h1>View and Update Data in Google Sheet</h1>
-  <div>
-    <form id="sheetForm">
-      <label for="searchName">Name to Search:</label>
-      <input type="text" id="searchName" name="searchName" required><br><br>
+  <div class="login-container">
+    <h1>Admin Login</h1>
+    <form id="loginForm">
+      <label for="userId">User ID:</label>
+      <input type="text" id="userId" name="userId" required><br><br>
 
-      <label for="searchCategory">Category to Search:</label>
-      <select id="searchCategory" name="searchCategory" required>
-        <option value="Bakery">Bakery</option>
-        <option value="Beauty and Spa">Beauty and Spa</option>
-        <option value="Cafe">Cafe</option>
-        <option value="Electronics">Electronics</option>
-        <option value="Hotel">Hotel</option>
-        <option value="Lodge">Lodge</option>
-        <option value="Medical">Medical</option>
-        <option value="Resort">Resort</option>
-        <option value="Restaurant">Restaurant</option>
-        <option value="Shop">Shop</option>
-        <option value="Showroom">Showroom</option>
-        <option value="Store">Store</option>
-      </select><br><br>
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required><br><br>
 
-      <label for="columnNumber">Column:</label>
-      <select id="columnNumber" name="column" required>
-        <option value="1">Name</option>
-        <option value="2">Address Full</option>
-        <option value="3">Rating</option>
-        <option value="4">Address 1</option>
-        <option value="5">Phone Number</option>
-        <option value="6">Image Source</option>
-        <option value="7">Place URL</option>
-        <option value="8">Country</option>
-        <option value="9">Keywords</option>
-        <option value="10">Category</option>
-        <option value="11">Verified</option>
-        <option value="12">Featured</option>
-        <option value="13">Services List</option>
-        <option value="14">Amenities</option>
-      </select><br><br>
-
-      <label for="newValue">New Value:</label>
-      <input type="text" id="newValue" name="newValue" required><br><br>
-
-      <button type="button" onclick="fetchData()">Fetch Data</button>
-      <button type="button" onclick="updateData()">Update Data</button>
+      <button type="button" onclick="login()">Login</button>
     </form>
+  </div>
 
+  <div class="main-container" style="display: none;">
+    <h1>View and Update Data in Google Sheet</h1>
+    <div>
+      <form id="sheetForm">
+        <label for="searchName">Name to Search:</label>
+        <input type="text" id="searchName" name="searchName" required><br><br>
 
-    <div id="output"></div>
+        <label for="searchCategory">Category to Search:</label>
+        <select id="searchCategory" name="searchCategory" required>
+          <option value="Bakery">Bakery</option>
+          <option value="Beauty and Spa">Beauty and Spa</option>
+          <option value="Cafe">Cafe</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Hotel">Hotel</option>
+          <option value="Lodge">Lodge</option>
+          <option value="Medical">Medical</option>
+          <option value="Resort">Resort</option>
+          <option value="Restaurant">Restaurant</option>
+          <option value="Shop">Shop</option>
+          <option value="Showroom">Showroom</option>
+          <option value="Store">Store</option>
+        </select><br><br>
+
+        <label for="columnNumber">Column:</label>
+        <select id="columnNumber" name="column" required>
+          <option value="1">Name</option>
+          <option value="2">Address Full</option>
+          <option value="3">Rating</option>
+          <option value="4">Address 1</option>
+          <option value="5">Phone Number</option>
+          <option value="6">Image Source</option>
+          <option value="7">Place URL</option>
+          <option value="8">Country</option>
+          <option value="9">Keywords</option>
+          <option value="10">Category</option>
+          <option value="11">Verified</option>
+          <option value="12">Featured</option>
+          <option value="13">Services List</option>
+          <option value="14">Amenities</option>
+        </select><br><br>
+
+        <label for="newValue">New Value:</label>
+        <input type="text" id="newValue" name="newValue" required><br><br>
+
+        <button type="button" onclick="fetchData()">Fetch Data</button>
+        <button type="button" onclick="updateData()">Update Data</button>
+      </form>
+
+      <div id="output"></div>
+    </div>
+  </div>
+
+  <div class="loader-container" style="display: none;">
+    <div class="loader"></div>
+  </div>
 
     <script>
+      function login() {
+        var userId = document.getElementById('userId').value;
+        var password = document.getElementById('password').value;
+  
+        // Dummy login check
+        if (userId === 'admin' && password === 'admin123') {
+          document.querySelector('.login-container').style.display = 'none';
+          document.querySelector('.main-container').style.display = 'block';
+        } else {
+          alert('Invalid credentials. Please try again.');
+        }
+      }
+  
+      function showLoader() {
+        document.querySelector('.loader-container').style.display = 'block';
+      }
+  
+      function hideLoader() {
+        document.querySelector('.loader-container').style.display = 'none';
+      }
       function fetchData() {
         var searchName = document.getElementById('searchName').value;
         var searchCategory = document.getElementById('searchCategory').value;

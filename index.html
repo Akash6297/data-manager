@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Fetch and Update Data</title>
+</head>
+
+<body>
+  <h1>View and Update Data in Google Sheet</h1>
+  <div>
+    <form id="sheetForm">
+      <label for="searchName">Name to Search:</label>
+      <input type="text" id="searchName" name="searchName" required><br><br>
+
+      <label for="searchCategory">Category to Search:</label>
+      <select id="searchCategory" name="searchCategory" required>
+        <option value="Bakery">Bakery</option>
+        <option value="Beauty and Spa">Beauty and Spa</option>
+        <option value="Cafe">Cafe</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Hotel">Hotel</option>
+        <option value="Lodge">Lodge</option>
+        <option value="Medical">Medical</option>
+        <option value="Resort">Resort</option>
+        <option value="Restaurant">Restaurant</option>
+        <option value="Shop">Shop</option>
+        <option value="Showroom">Showroom</option>
+        <option value="Store">Store</option>
+      </select><br><br>
+
+      <label for="columnNumber">Column:</label>
+      <select id="columnNumber" name="column" required>
+        <option value="1">Name</option>
+        <option value="2">Address Full</option>
+        <option value="3">Rating</option>
+        <option value="4">Address 1</option>
+        <option value="5">Phone Number</option>
+        <option value="6">Image Source</option>
+        <option value="7">Place URL</option>
+        <option value="8">Country</option>
+        <option value="9">Keywords</option>
+        <option value="10">Category</option>
+        <option value="11">Verified</option>
+        <option value="12">Featured</option>
+        <option value="13">Services List</option>
+        <option value="14">Amenities</option>
+      </select><br><br>
+
+      <label for="newValue">New Value:</label>
+      <input type="text" id="newValue" name="newValue" required><br><br>
+
+      <button type="button" onclick="fetchData()">Fetch Data</button>
+      <button type="button" onclick="updateData()">Update Data</button>
+    </form>
+
+
+    <div id="output"></div>
+
+    <script>
+      function fetchData() {
+        var searchName = document.getElementById('searchName').value;
+        var searchCategory = document.getElementById('searchCategory').value;
+
+        fetch(`https://script.google.com/macros/s/AKfycbz5k1Y2z_MtvXpA_0PG9Z9xpaQVQ9iH92WGcQX5vOU8afMbmosVRzekvCOplGQQJ--z/exec?name=${searchName}&category=${searchCategory}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.error) {
+              document.getElementById('output').textContent = data.error;
+            } else {
+              var outputHtml = '<h2>Current Data:</h2><ul>';
+              for (var i = 0; i < data.data.length; i++) {
+                var row = data.data[i];
+                outputHtml += '<li><strong>Row Data:</strong><ul>';
+                for (var key in row) {
+                  outputHtml += `<li><strong>${key}:</strong> <span class="url">${row[key]}</span></li>`;
+                }
+                outputHtml += '</ul></li>';
+              }
+              outputHtml += '</ul>';
+              document.getElementById('output').innerHTML = outputHtml;
+            }
+          })
+          .catch(error => console.error('Error:', error));
+      }
+
+      function updateData() {
+        var searchName = document.getElementById('searchName').value;
+        var searchCategory = document.getElementById('searchCategory').value;
+        var columnNumber = document.getElementById('columnNumber').value;
+        var newValue = document.getElementById('newValue').value;
+
+        // Check if the new value is empty
+        if (newValue.trim() === '') {
+          alert('Please enter a new value.');
+          return;
+        }
+
+        fetch(`https://script.google.com/macros/s/AKfycbz5k1Y2z_MtvXpA_0PG9Z9xpaQVQ9iH92WGcQX5vOU8afMbmosVRzekvCOplGQQJ--z/exec`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: `name=${searchName}&category=${searchCategory}&column=${columnNumber}&newValue=${newValue}`
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.error) {
+              document.getElementById('output').textContent = data.error;
+            } else {
+              document.getElementById('output').textContent = data.message;
+            }
+          })
+          .catch(error => console.error('Error:', error));
+      }
+    </script>
+  </body>
+
+  </html>

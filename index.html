@@ -47,6 +47,7 @@
 
         <label for="columnNumber">Column:</label>
         <select id="columnNumber" name="column" required>
+          <option value="0">--Select--</option>
           <option value="1">Name</option>
           <option value="2">Address Full</option>
           <option value="3">Rating</option>
@@ -59,18 +60,37 @@
           <option value="10">Category</option>
           <option value="11">Verified</option>
           <option value="12">Featured</option>
-          <option value="13">Services List</option>
+          <option value="13">Tags</option>
           <option value="14">Amenities</option>
+          <option value="15">Description</option>
         </select><br><br>
 
-        <label for="newValue">New Value:</label>
-        <input type="text" id="newValue" name="newValue" required><br><br>
+        <!-- Updated New Value section with Add New button -->
+        <div id="newValueContainer" style="display: none;">
+          <label for="newValue">New Value:</label>
+          <input type="text" id="newValue" name="newValue" required><br><br>
+
+          <div id="addNewButton" style="display: none;">
+            <button type="button" onclick="showAddTag()">Add New</button>
+          </div>
+
+          <div id="addTag" style="display: none;">
+            <label for="tagTitle">Title:</label>
+            <input type="text" id="tagTitle" name="tagTitle" required>
+
+            <label for="tagIcon">Icon:</label>
+            <input type="text" id="tagIcon" name="tagIcon" required>
+
+            <button type="button" onclick="addTag()">Add</button>
+          </div>
+        </div>
 
         <button type="button" onclick="fetchData()">Fetch Data</button>
         <button type="button" onclick="updateData()">Update Data</button>
       </form>
 
       <div id="output"></div>
+      <textarea id="fullData" rows="10" cols="50" readonly></textarea>
     </div>
   </div>
 
@@ -78,83 +98,188 @@
     <div class="loader"></div>
   </div>
 
-    <script>
-      function login() {
-        var userId = document.getElementById('userId').value;
-        var password = document.getElementById('password').value;
-  
-        // Dummy login check
-        if (userId === 'admin' && password === 'admin123') {
-          document.querySelector('.login-container').style.display = 'none';
-          document.querySelector('.main-container').style.display = 'block';
-        } else {
-          alert('Invalid credentials. Please try again.');
-        }
-      }
-  
-      function showLoader() {
-        document.querySelector('.loader-container').style.display = 'block';
-      }
-  
-      function hideLoader() {
-        document.querySelector('.loader-container').style.display = 'none';
-      }
-      function fetchData() {
-        var searchName = document.getElementById('searchName').value;
-        var searchCategory = document.getElementById('searchCategory').value;
+  <script>
+    let currentEditData = null;
 
-        fetch(`https://script.google.com/macros/s/AKfycbz5k1Y2z_MtvXpA_0PG9Z9xpaQVQ9iH92WGcQX5vOU8afMbmosVRzekvCOplGQQJ--z/exec?name=${searchName}&category=${searchCategory}`)
-          .then(response => response.json())
-          .then(data => {
-            if (data.error) {
-              document.getElementById('output').textContent = data.error;
-            } else {
-              var outputHtml = '<h2>Current Data:</h2><ul>';
-              for (var i = 0; i < data.data.length; i++) {
-                var row = data.data[i];
-                outputHtml += '<li><strong>Row Data:</strong><ul>';
-                for (var key in row) {
-                  outputHtml += `<li><strong>${key}:</strong> <span class="url">${row[key]}</span></li>`;
-                }
-                outputHtml += '</ul></li>';
-              }
-              outputHtml += '</ul>';
-              document.getElementById('output').innerHTML = outputHtml;
+    function login() {
+      var userId = document.getElementById('userId').value;
+      var password = document.getElementById('password').value;
+
+      // Dummy login check
+      if (userId === 'admin' && password === 'admin123') {
+        document.querySelector('.login-container').style.display = 'none';
+        document.querySelector('.main-container').style.display = 'block';
+      } else {
+        alert('Invalid credentials. Please try again.');
+      }
+    }
+
+    function showAddTag() {
+      document.getElementById('newValueContainer').style.display = 'block';
+      document.getElementById('addNewButton').style.display = 'none';
+      document.getElementById('addTag').style.display = 'block';
+    }
+
+    function addTag() {
+      var tagTitle = document.getElementById('tagTitle').value;
+      var tagIcon = document.getElementById('tagIcon').value;
+      var newValueInput = document.getElementById('newValue');
+
+      var tagData = `{title: "${tagTitle}", icon: "${tagIcon}"}`;
+      if (newValueInput.value.trim() === '') {
+        newValueInput.value = tagData;
+      } else {
+        newValueInput.value += ', ' + tagData;
+      }
+
+      // Clear input fields and hide add section
+      document.getElementById('tagTitle').value = '';
+      document.getElementById('tagIcon').value = '';
+      document.getElementById('addTag').style.display = 'none';
+      document.getElementById('addNewButton').style.display = 'block';
+    }
+
+    // Call showAddTag() when 'Tags' or 'Amenities' is selected
+    document.getElementById('columnNumber').addEventListener('change', function () {
+      var selectedColumn = this.value;
+      var newValueContainer = document.getElementById('newValueContainer');
+      var addNewButton = document.getElementById('addNewButton');
+      var addTag = document.getElementById('addTag');
+
+      // For Tags or Amenities, show the add new functionality
+      if (selectedColumn === '13' || selectedColumn === '14') { // Tags or Amenities
+        newValueContainer.style.display = 'block';
+        addNewButton.style.display = 'none';
+        addTag.style.display = 'block';
+      } else {
+        // For other columns, just show the New Value input field
+        newValueContainer.style.display = 'block';
+        addNewButton.style.display = 'none';
+        addTag.style.display = 'none';
+      }
+    });
+
+    function fetchData() {
+      var searchName = document.getElementById('searchName').value;
+      var searchCategory = document.getElementById('searchCategory').value;
+      var columnNumber = document.getElementById('columnNumber').value;
+
+      fetch(`https://script.google.com/macros/s/AKfycbzGEft40VX7dvFak3g7aVijuTYs-ywAbqca2R3aXSbNS1Ot3Qs-wiBq0qytW6OEZ87qPg/exec?name=${searchName}&category=${searchCategory}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            document.getElementById('output').textContent = data.error;
+          } else {
+            var fullData = '';
+            for (var i = 0; i < data.data.length; i++) {
+              var row = data.data[i];
+              fullData += JSON.stringify(row, null, 2) + '\n\n';
             }
-          })
-          .catch(error => console.error('Error:', error));
+            document.getElementById('fullData').value = fullData;
+            currentEditData = data.data;
+
+            // Assume that we need to get the value from the first row for demo purposes
+            var row = data.data[0] || {}; // Protect against no data
+
+            // Update New Value input based on the selected column, adjust to match your column definitions
+            updateNewValueInput(columnNumber, row);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          document.getElementById('output').textContent = 'Failed to fetch data';
+        });
+    }
+
+    function updateNewValueInput(columnNumber, row) {
+      document.getElementById('columnNumber').addEventListener('change', function () {
+        var selectedColumn = this.value;
+        var row = currentEditData[0] || {}; // Get the first row for demo, adjust as needed
+        updateNewValueInput(selectedColumn, row);
+      });
+      
+      var newValueInput = document.getElementById('newValue');
+      switch (columnNumber) {
+        case '1':
+          newValueInput.value = row.name || '';
+          break;
+        case '2':
+          newValueInput.value = row.address_full || '';
+          break;
+        case '3':
+          newValueInput.value = row.rating || '';
+          break;
+        case '4':
+          newValueInput.value = row.address_1 || '';
+          break;
+        case '5':
+          newValueInput.value = row.phone_number || '';
+          break;
+        case '6':
+          newValueInput.value = row.image_source ? row.image_source.join(', ') : ''; // Assuming array
+          break;
+        case '7':
+          newValueInput.value = row.place_url || '';
+          break;
+        case '8':
+          newValueInput.value = row.country || '';
+          break;
+        case '9':
+          newValueInput.value = row.keywords || '';
+          break;
+        case '10':
+          newValueInput.value = row.category || '';
+          break;
+        case '11':
+          newValueInput.value = row.verified || '';
+          break;
+        case '12':
+          newValueInput.value = row.featured || '';
+          break;
+        case '13':
+          newValueInput.value = row.tags ? row.tags.map(tag => `{title: "${tag.title}", icon: "${tag.icon}"}`).join(', ') : '';
+          break;
+        case '14':
+          newValueInput.value = row.amenities ? row.amenities.map(amenity => `{title: "${amenity.title}", icon: "${amenity.icon}"}`).join(', ') : '';
+          break;
+        case '15':
+          newValueInput.value = row.description || '';
+          break;
+        default:
+          newValueInput.value = ''; // Clear the input if the column is not recognized
+          break;
+      }
+    }
+
+    function updateData() {
+      var searchName = document.getElementById('searchName').value;
+      var searchCategory = document.getElementById('searchCategory').value;
+      var columnNumber = document.getElementById('columnNumber').value;
+      var newValue = document.getElementById('newValue').value;
+
+      // Check if the new value is empty
+      if (newValue.trim() === '') {
+        alert('Please enter a new value.');
+        return;
       }
 
-      function updateData() {
-        var searchName = document.getElementById('searchName').value;
-        var searchCategory = document.getElementById('searchCategory').value;
-        var columnNumber = document.getElementById('columnNumber').value;
-        var newValue = document.getElementById('newValue').value;
-
-        // Check if the new value is empty
-        if (newValue.trim() === '') {
-          alert('Please enter a new value.');
-          return;
-        }
-
-        fetch(`https://script.google.com/macros/s/AKfycbz5k1Y2z_MtvXpA_0PG9Z9xpaQVQ9iH92WGcQX5vOU8afMbmosVRzekvCOplGQQJ--z/exec`, {
+      fetch(`https://script.google.com/macros/s/AKfycbzGEft40VX7dvFak3g7aVijuTYs-ywAbqca2R3aXSbNS1Ot3Qs-wiBq0qytW6OEZ87qPg/exec`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
           },
           body: `name=${searchName}&category=${searchCategory}&column=${columnNumber}&newValue=${newValue}`
         })
-          .then(response => response.json())
-          .then(data => {
-            if (data.error) {
-              document.getElementById('output').textContent = data.error;
-            } else {
-              document.getElementById('output').textContent = data.message;
-            }
-          })
-          .catch(error => console.error('Error:', error));
-      }
-    </script>
-  </body>
-
-  </html>
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            document.getElementById('output').textContent = data.error;
+          } else {
+            document.getElementById('output').textContent = data.message;
+          }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+  </script>
+</body>
+</html>  
